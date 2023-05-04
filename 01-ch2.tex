@@ -82,7 +82,7 @@ CKKS 方案包含以下的核心函数和算法：
 ECDSA 包含以下方法：
 
 \begin{itemize}
-    \item $KeyGen(\lambda) \rightarrow sk, pk$：输入安全参数 \lambda\footnote{通常为某一椭圆曲线}，输出一对随机生成的私钥 $sk$ 和公钥 $pk$。
+    \item $KeyGen(\lambda) \rightarrow sk, pk$：输入安全参数 $\lambda$\footnote{通常为某一椭圆曲线}，输出一对随机生成的私钥 $sk$ 和公钥 $pk$。
     \item $Sign(m, sk) \rightarrow sig$：使用私钥 $sk$ 对消息 $m$ 进行签名，输出签名 $sig$。
     \item $Verify(m, pk, sig) \rightarrow bool$：使用公钥 $pk$ 对签名 $sig$ 进行验证，输出验证结果 $bool$。
 \end{itemize}
