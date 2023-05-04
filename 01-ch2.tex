@@ -37,7 +37,10 @@ CKKS（Cheon-Kim-Kim-Song） 方案，又称为 HEAAN（Homomorphic Encryption f
 
 CKKS 方案由首尔大学的 Cheon 等人在 ASIACRYPT17 上首次提出\cite{cryptoeprint:2016/421}，此时其属于层级全同态加密，即只支持在预定层级内进行密文之间的同态乘法，当层级降低至 0 后，密文之间的同态乘法将不再可用。随后在 2018 年 Cheon 等人提出了 CKKS 方案的自举方法\cite{cryptoeprint:2018/153}，允许刷新密文的层级。该成果将该方案拓展至全同态加密。同一年晚些时候，Cheon 等人提出了 CKKS 方案的余数系统变种，极大地提升了原方案的性能。\cite{cryptoeprint:2018/931}此外，亦有实验性的使用多项式近似对两个密文进行比较的算法被提出\cite{cryptoeprint:2019/417,cryptoeprint:2019/1234,cryptoeprint:2020/834}。
 
-目前 CKKS 已经集成至诸多流行的密码学库，包括 SEAL、OpenFHE 和 Lattigo 等\cite{sealcrypto,OpenFHE,Mouchet2020LattigoAM}，并受到来自开源社区的优化和维护。
+目前 CKKS 已经集成至诸多流行的密码学库，包括 SEAL、OpenFHE 和 Lattigo 等\cite{sealcrypto,OpenFHE,Mouchet2020LattigoAM}，并受到来自开源社区的优化和维护。CKKS 的加密解密流程如图所示：
+
+% 放一张示意图
+% 考虑 https://yongsoosong.github.io/files/slides/intro_to_CKKS.pdf
 
 CKKS 方案包含以下的核心函数和算法：
 
@@ -65,11 +68,6 @@ CKKS 方案包含以下的核心函数和算法：
     \item $GenSwk(sk_1, sk_2) \rightarrow swk$：以私钥 $sk_1$ 和 $sk_2$ 为输入，输出用于进行密钥转换的重加密密钥 $swk$。
     \item $SwitchKey_{swk}(ct_{pk_1}) \rightarrow ct_{pk_2}$：该函数将密文 $ct_{pk_1}$ 转换为 $pk_2$ 对应的密文 $ct_{pk_2}$。
 \end{itemize}
-
-CKKS 的加密解密流程如图所示：
-
-% 放一张示意图
-% 考虑 https://yongsoosong.github.io/files/slides/intro_to_CKKS.pdf
 
 \section{数字签名算法}
 
