@@ -59,7 +59,7 @@ CKKS 方案包含以下的核心函数和算法：
 
 \begin{itemize}
     \item $Rescale(ct, r) \rightarrow ct'$：即密文的重缩放过程。输入密文 $ct$ 和重缩放的精度 $r$，输出重缩放后的密文 $ct'$，其中 $ct'$ 具有更小的模数 $q' = q \bullet r^{-1}$。重缩放操作作为一种有效的密文噪声控制手段，在 CKKS 方案中起到了关键作用，有效地将同态乘法带来的噪声增长速率从指数级控制到线性级。
-    \item $Rotate(ct, k) \rightarrow ct'$：
+    \item $Rotate_{evk}(ct, k) \rightarrow ct'$：密文的旋转操作。输入密文 $ct$ 和旋转的位数 $k$，输出旋转后的密文 $ct'$。
 \end{itemize}
 
 得益于 R-LWE 问题允许对密文的密钥进行转换\cite{brakerski2014leveled}，CKKS 加密方案亦适用于以下重加密方法：
