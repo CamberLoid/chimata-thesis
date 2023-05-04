@@ -77,14 +77,14 @@ CKKS 方案包含以下的核心函数和算法：
 
 \subsection{ECDSA}
 
-椭圆曲线数字签名算法（Elliptic Curve Digital Signature Algorithm, ECDSA）是一种基于椭圆曲线密码学的数字签名算法。
+椭圆曲线数字签名算法（Elliptic Curve Digital Signature Algorithm, ECDSA）是一种基于椭圆曲线密码学的数字签名算法，由 DSA 签名算法与椭圆曲线密码体制结合而成，并逐渐成为 ANSI\footnote{American National Standards Institute，美国国家标准学会}、IEEE\footnote{Institute of Electrical and Electronics Engineers，电气电子工程师学会}、ISO\footnote{International Organization for Standardization，国际标准化组织} 和 NIST\footnote{National Institute of Standards and Technology，美国国家标准技术研究所} 标准\cite{ecdsa_blockchain}。 
 
 ECDSA 包含以下方法：
 
 \begin{itemize}
-    \item $KeyGen(\lambda) \rightarrow sk, pk$
-    \item $Sign(m, sk) \rightarrow sig$
-    \item $Verify(m, pk, sig) \rightarrow bool$：
+    \item $KeyGen(\lambda) \rightarrow sk, pk$：输入安全参数 \lambda\footnote{通常为某一椭圆曲线}，输出一对随机生成的私钥 $sk$ 和公钥 $pk$。
+    \item $Sign(m, sk) \rightarrow sig$：使用私钥 $sk$ 对消息 $m$ 进行签名，输出签名 $sig$。
+    \item $Verify(m, pk, sig) \rightarrow bool$：使用公钥 $pk$ 对签名 $sig$ 进行验证，输出验证结果 $bool$。
 \end{itemize}
 
 \section{Lattigo}
@@ -108,9 +108,7 @@ SQLite3 的主要特性如下：\cite{sqlite3_2}
     \item 零配置：SQLite 不需要进行额外的配置，也不需要服务器进程，所有的数据都存储在一个单独的文件中。SQLite 可以作为动态或静态链接库嵌入应用程序，而且大多数语言都有对应的第三方库。
     \item 事务性：和其他数据库一样，SQLite 也支持事务，而且支持 ACID 属性。对SQLite嵌入式数据库来说，单个事务中的所有更改要么完全触发，要么根本不发生。
 \end{itemize}
-
-\section{}
-
+「
 \section{REST API}
 % 视情况考虑是否保留
 REST（Representational State Transfer），即表现层状态转换，是一种网络软件架构风格。它具有以下的特点：

@@ -1,21 +1,18 @@
-% 摘要 
-
 \begin{abstract}
-% 背景
 在当下的世界中，随着电子商务在商业发展中的地位逐渐上升，移动支付及其技术正被越来越多的人关注。一个典型的移动支付场景包括了转出方，转入方以及支付服务提供方，而支付服务提供方也可能在交易过程中与银行产生联系。然而，支付服务提供商可能受到来自外部攻击或是内部监守自盗等安全威胁，对用户交易隐私造成泄露风险。因此，对用户的交易隐私进行保护就显得尤为重要。
 
-% 本文提出了什么
 针对用户之间的交易金额的隐私保护，本文基于 R-LWE 困难问题和 CKKS 同态加密算法，同时结合基于椭圆曲线的数字签名算法，提出了一个金额为密文的加密交易方案，实现了用户交易金额信息不被支付服务提供方等不可信第三方知道。在此之上，在通过重加密方法保证交易金额正确性的同时，也使用了 CKKS 支持对浮点数进行同态运算的特性为交易手续费的计算留下了空间，同时也试图使得交易可以被监管方审计。
 
-% 本文做了什么
-本文首先对相关基础知识和关键技术进行了综述；其次。对程序进行了简单的基准测试表明，（待补全）
-
-% 实验结果，空缺
+本文首先对相关基础知识和关键技术进行了综述和研究，包括格密码学库 Lattigo、全同态加密方案 CKKS Scheme 和轻量级数据库引擎 SQLite3；其次对方案的需求和抽象构造进行了描述，并给出了代码层级的实现；最后对方案进行了测试，验证了方案的可行性。
 
 \end{abstract}
-\keywords{同态加密, CKKS方案, 隐私保护, 交易隐私数据}
+\keywords{同态加密, CKKS方案, 隐私保护, 交易隐私数据, Lattigo, Golang}
 
 \begin{enabstract}
+In today’s world, as e-commerce rises in prominence in business development, mobile payment and its technology are attracting increasing attention. A typical mobile payment scenario involves a payer, a payee, and a payment service provider, who may also interact with banks during the transaction process. However, payment service providers may face security threats from external attacks or internal embezzlement, posing a risk of privacy leakage for user transactions. Therefore, protecting user transaction privacy is particularly important.
 
+To protect the privacy of transaction amounts between users, this paper proposes an encrypted transaction scheme with ciphertext amounts based on the R-LWE hard problem and the CKKS homomorphic encryption algorithm, combined with an elliptic curve-based digital signature algorithm. This scheme ensures that user transaction amount information is not known to untrusted third parties such as payment service providers. Furthermore, while ensuring the correctness of transaction amounts through re-encryption methods, the CKKS feature of supporting homomorphic operations on floating-point numbers is also used to leave room for calculating transaction fees and to attempt to make transactions auditable by regulators.
+    
+This paper first reviews and studies relevant basic knowledge and key technologies, including lattice-based cryptography library Lattigo, the fully homomorphic encryption scheme CKKS Scheme, and the lightweight database engine SQLite3. Then it describes the requirements and abstract construction of the scheme and provides code-level implementation. Finally, the feasibility of the scheme is verified through testing.
 \end{enabstract}
-\enkeywords{Homomorphic Encryption,Cheon-Kim-Kim-Song Scheme, Privacy-Preserving, Privacy of Transaction}
+\enkeywords{Homomorphic Encryption, Cheon-Kim-Kim-Song Scheme, Privacy-Preserving, Privacy of Transaction, Lattigo, Golang}
