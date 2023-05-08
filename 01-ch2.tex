@@ -31,24 +31,19 @@ R-LWE （Ring-LWE）问题由 LWE 问题衍生，将 LWE 问题拓展至多项�
 
 \subsection{CKKS 方案综述}
 
-CKKS（Cheon-Kim-Kim-Song） 方案，又称为 HEAAN（Homomorphic Encryption for Arithmetic of Approximate Numbers），是一种允许对全体复数向量域 $\mathbb{C}^{N/2}$ 进行同态运算的全同态加密方案。其安全性来源于 R-LWE 问题的决策版本。该方案的主要特点在于以一定误差为代价，允许对复数值向量进行计算。这一关键特性意味着其突破了先前提出的同态加密方案只能对整数进行运算的限制，对于许多实际应用来说非常重要。
+CKKS（Cheon-Kim-Kim-Song） 方案，又称为 HEAAN（Homomorphic Encryption for Arithmetic of Approximate Numbers），是一种允许对全体复数向量域 $\mathbb{C}^{N/2}$ 进行同态运算的全同态加密方案。其安全性来源于 R-LWE 问题的决策版本。该方案的主要特点在于以一定误差为代价，允许对复数值向量进行计算。这一关键特性意味着其突破了先前提出的同态加密方案只能对整数进行运算的限制，对于许多实际应用来说非常重要。目前 CKKS 已经集成至诸多流行的密码学库，包括 SEAL、OpenFHE 和 Lattigo 等\cite{sealcrypto,OpenFHE,Mouchet2020LattigoAM}，并受到来自开源社区的优化和维护。
 
 与以往同态加密方案将噪声空间和明文空间分开的设计不同，CKKS 方案将噪声视为明文的一部分，而噪声一方面来源于基于 R-LWE 的加密方案中为保证安全性而人为加入的误差，另一方面也来源于近似计算中的舍入误差。密文解密后不能将明文中的噪声去除，只能以预定的精度 $\Delta$ 输出明文的近似值。\cite{CKKS_optimize}
 
 CKKS 方案由首尔大学的 Cheon 等人在 ASIACRYPT17 上首次提出\cite{cryptoeprint:2016/421}，此时其属于层级全同态加密，即只支持在预定层级内进行密文之间的同态乘法，当层级降低至 0 后，密文之间的同态乘法将不再可用。随后在 2018 年 Cheon 等人提出了 CKKS 方案的自举方法\cite{cryptoeprint:2018/153}，允许刷新密文的层级。该成果将该方案拓展至全同态加密。同一年晚些时候，Cheon 等人提出了 CKKS 方案的余数系统变种，极大地提升了原方案的性能。\cite{cryptoeprint:2018/931}此外，亦有实验性的使用多项式近似对两个密文进行比较的算法被提出\cite{cryptoeprint:2019/417,cryptoeprint:2019/1234,cryptoeprint:2020/834}。
 
-目前 CKKS 已经集成至诸多流行的密码学库，包括 SEAL、OpenFHE 和 Lattigo 等\cite{sealcrypto,OpenFHE,Mouchet2020LattigoAM}，并受到来自开源社区的优化和维护。CKKS 的加密解密流程如图所示：
-
-% 放一张示意图
-% 考虑 https://yongsoosong.github.io/files/slides/intro_to_CKKS.pdf
-
 CKKS 方案包含以下的核心函数和算法：
 
 \begin{itemize}
     \item $KeyGen(\lambda) \rightarrow sk, pk, evk$：密钥生成算法，输入安全参数 $\lambda$，输出公钥 $pk$ 和私钥 $sk$，以及评估密钥 $evk$。
-    \item $Ecd(z; \Delta) \rightarrow m$：对消息进行编码的算法，输入一个复向量 $z \in \mathbb{Z}^{n/2}$，输出编码后的明文 $m \in R_q = \mathbb{Z}_q[X]/(X^n+1)$，其中 $m$ 为该明文编码后对应的多项式；$\Delta$ 为编码的精度。
+    \item $Ecd(z; \Delta) \rightarrow m$：对消息进行编码的算法，输入一个复向量 $z \in \mathbb{Z}^{N/2}$，输出编码后的明文 $m \in R_q = \mathbb{Z}_q[X]/(X^N+1)$；其中 $m$ 为该明文编码后对应的多项式，$\Delta$ 为编码的精度，$N$ 为该向量的最大长度。
     \item $Dcd(m; \Delta) \rightarrow z$ ：将上述编码后的明文解码为复向量的算法，输入编码后的明文 $m$，输出解码后的复向量 $z$。
-    \item $Enc_{pk}(m) \rightarrow ct$ ：使用公钥 $pk$ 对明文 $m$ 进行加密，输出密文 $ct$。
+    \item $Enc_{pk}(m) \rightarrow ct$ ：使用公钥 $pk$ 对明文 $m$ 进行加密，输出密文 $ct = (c_0(X),c_1(X)) \in R_Q^2, R_Q = Z_Q[X]/(X^n + 1)$。
     \item $Dec_{sk}(ct) \rightarrow m'$ ：使用私钥 $sk$ 对密文 $ct$ 进行解密，输出明文 $m'$
     \item $Add(ct_1, ct_2)$ ：对密文进行加法运算的算法，输入两个密文 $ct_1$ 和 $ct_2$，输出加法运算后的密文 $ct_{add} = ct_1 + ct_2 = Enc_{pk}(m_1 + m_2)$。
     \item $Mult_{evk}(ct_1, ct_2) = ct_1 \bullet ct_2$：对密文进行乘法运算，输入两个密文 $ct_1$ 和 $ct_2$，输出乘法运算后的密文 $ct_{mult} = ct_1 \bullet ct_2 = Enc_{pk}(m_1 \bullet m_2)$。
@@ -68,6 +63,14 @@ CKKS 方案包含以下的核心函数和算法：
     \item $GenSwk(sk_1, sk_2) \rightarrow swk$：以私钥 $sk_1$ 和 $sk_2$ 为输入，输出用于进行密钥转换的重加密密钥 $swk$。
     \item $SwitchKey_{swk}(ct_{pk_1}) \rightarrow ct_{pk_2}$：该函数将密文 $ct_{pk_1}$ 转换为 $pk_2$ 对应的密文 $ct_{pk_2}$。
 \end{itemize}
+
+下图\cite{ckksIntroduct} \ref*{Fig:CKKS}描述了 CKKS 方案的工作生命周期：
+
+\begin{figure}[ht]
+    \centering
+    \includegraphics[width=0.8\linewidth]{./Figures/CKKS_Diagram.png}
+    \caption{CKKS 方案工作示意图}\label{Fig:CKKS}
+\end{figure}
 
 \section{数字签名算法}
 
@@ -121,5 +124,4 @@ SQLite3 的主要特性如下：\cite{sqlite3_2}
 
 \section{本章小结}
 
-本章首先介绍了同态加密和全同态加密，及其发展历程。接着介绍了本文所使用的全同态加密方案 CKKS。最后介绍了 Lattigo 这一密码学库的特点，以及 REST API 这一网络架构风格。
-
+本章首先介绍了同态加密和全同态加密，及其发展历程。然后，本章重点介绍了本文所使用的全同态加密方案 CKKS，包括其基于的困难问题，CKKS 方案的特点，以及该加密方案包含的主要函数等。本章也对椭圆曲线签名算法等涉及到的其他密码学工具，进行了简要的介绍。另外本章也简要介绍了后文中会用到的软件工具，包括全同态加密密码学库 Lattigo 和数据库引擎 SQLite 3，为后续的实现进行准备。本章内容是后文的基础，后续对交易方案的构建都在本章基础之上完成。

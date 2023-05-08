@@ -2,11 +2,15 @@
 
 \section{引言}
 
-本章主要对本文提出的交易金额隐私保护的交易方案的样例实现进行描述，方案的实现设计抽象如下图所示。
+本章主要对本文提出的交易金额隐私保护的交易方案的样例实现进行描述，方案的实现设计抽象如下图\ref*{Fig:Design}所示。
 
-% 插入示意图
+\begin{figure}
+    \centering
+    \includegraphics[width=0.8\linewidth]{Figures/abstract_on_chimata.png}
+    \caption{示意图：代码层面设计}\label{Fig:Design}
+\end{figure}
 
-实现分为多个层级，最底层为程序设计语言工具链 Golang、数据库 SQLite3 以及全同态加密库 Lattigo；往上一层为共用的内部包（Internal Package），包括定义用户的包 \verb|internal/user|、定义共用数据库操作的包 \verb|internal/db|、定义单笔交易基本信息的包 \verb|internal/transaction|，以及定义密钥的包 \verb|internal/db|；再向上一层则为定义了客户端和服务端主要操作的包 \verb|internal/\{client,server\}lib|。最上层则为本文附带的可能的服务端样例实现。此外，本文亦提供了一些集成测试样例，可以通过 Golang 工具链的测试功能进行运行。对测试的具体描述和结果将放置在下一章描述。
+实现分为多个层级，最底层为程序设计语言工具链 Golang、数据库 SQLite3 以及全同态加密库 Lattigo；往上一层为共用的内部包（Internal Package），包括定义用户的包 \verb|internal/user|、定义共用数据库操作的包 \verb|internal/db|、定义单笔交易基本信息的包 \verb|internal/transaction|，以及定义密钥的包 \verb|internal/db|；再向上一层则为定义了客户端和服务端主要操作的包 \verb|internal/clientlib| 和 \verb|internal/serverlib|。最上层则为本文附带的可能的服务端样例实现。此外，本文亦提供了一些集成测试样例，可以通过 Golang 工具链的测试功能进行运行。对测试的具体描述和结果将放置在下一章描述。
 
 本实现使用了以下第三方包：
 
@@ -32,9 +36,13 @@
     \item \verb|TABLE ECDSAKeyChains|：记录签名算法 ECDSA 所使用公私钥的表
 \end{itemize}
 
-本文的数据库具体设计的抽象如下图所示：
+本文的数据库具体设计的抽象如下图\ref*{Fig:Database}所示：
 
-% 插入数据库设计图
+\begin{figure}
+    \centering
+    \includegraphics[width=0.8\linewidth]{Figures/chimata-database-design.png}
+    \caption{数据库设计示意图}\label{Fig:Database}
+\end{figure}
 
 在 Golang 中使用下面的语句导入 SQLite3 相关库：
 

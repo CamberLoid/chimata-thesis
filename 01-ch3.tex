@@ -22,8 +22,11 @@
 
 \subsection{方案构造总论}
 
-% 插入一张描述模型的图片
-% [客户端前端[Clientlib]] <-- http --> [基于 HTTP 的的服务端[ServerLib]]
+\begin{figure}
+    \centering
+    \includegraphics[width=0.8\linewidth]{Figures/chimata-transaction-abstract.png}
+    \caption{方案抽象描述}\label{Fig:chimata_abstract_transaction}
+\end{figure}
 
 假设付款人 Alice 想要给收款人 Bob 进行一笔金额为 $m$ 的转账，转账操作需要经过支付服务提供方 Eve Corp. 提供的服务。Alice 和 Bob 的公钥分别为 $pk_A$ 和 $pk_B$，私钥分别为 $sk_A$ 和 $sk_B$。
 
