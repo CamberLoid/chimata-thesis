@@ -15,9 +15,9 @@
 本实现使用了以下第三方包：
 
 \begin{itemize}
-    \item \verb|uuid|(From google)：用于生成和管理 UUID；
-    \item \verb|lattigo|：含有 CKKS 方案的密码学库；
-    \item \verb|go-sqlite3|：访问 SQLite 数据库文件；
+    \item \verb|github.com/google/uuid|：用于生成和管理 UUID；
+    \item \verb|github.com/tuneinsight/lattigo/v4|：含有 CKKS 方案的密码学库；
+    \item \verb|github.com/mattn/go-sqlite3|：访问 SQLite 数据库文件；
 \end{itemize}
 
 \section{方案支持层}
@@ -85,7 +85,7 @@ type Transaction struct {
 \begin{itemize}
     \item \verb|ConfirmingPhase|：交易的确认阶段，取值为 \verb|{"unconfirmed", "confirmed", "failed"}|，分别表示未确认、已确认和无效；
     \item \verb|Sender, Receipt|：作为外码标识交易的转出和转入方，其底层类型为 \verb|[16]byte|；
-    \item \verb|CTSender, CTReceipt|：经过 \verb|rlwe.CipherText.MarshalBinary()| 方法反序列化的密文
+    \item \verb|CTSender, CTReceipt|：经过 \verb|rlwe.CipherText.MarshalBinary()| 方法反序列化的密文；
     \item \verb|SigCTSender, SigCTReceipt|：对密文的签名，由标准库 \verb|crypto/ecdsa| 中 \verb|ecdsa.SignASN1()| 产生；
 \end{itemize}
 
@@ -105,7 +105,7 @@ type Transaction struct {
 子包 \verb|internal/key| 定义了密钥链的相关结构体和函数，包括以下部分：
 
 \begin{itemize}
-    \item \verb|type CKKSKeyChain struct|：CKKS 方案所使用的密钥链结构体，包含了公私钥对象的指针\verb|CKKSPrivateKey *rlwe.SecretKey, CKKSPublicKey  *rlwe.PublicKey|，以及一个唯一标识符 \verb|Identifier|
+    \item \verb|type CKKSKeyChain struct|：CKKS 方案所使用的密钥链结构体，包含了公私钥对象的指针\verb|CKKSPrivateKey *rlwe.SecretKey| \verb|CKKSPublicKey  *rlwe.PublicKey|，以及一个唯一标识符 \verb|Identifier uuid.UUID|
     \item \verb|type ECDSAKeyChain struct|：类似 CKKSKeyChain 的定义，此处不再赘述。
     \item \verb|type CKKSPayload interface|：包含了 \verb|MarshalBinary() ([]byte, error)| 和 \verb|UnmarshalBinary([]byte) error| 两个序列化和反序列化函数的接口，对应 lattigo 中的密文对象、公私钥对象和重加密密钥对象。
 \end{itemize}
