@@ -10,7 +10,7 @@
     \caption{示意图：代码层面设计}\label{Fig:Design}
 \end{figure}
 
-实现分为多个层级，最底层为程序设计语言工具链 Golang、数据库 SQLite3 以及全同态加密库 Lattigo；往上一层为共用的内部包（Internal Package），包括定义用户的包 \verb|internal/user|、定义共用数据库操作的包 \verb|internal/db|、定义单笔交易基本信息的包 \verb|internal/transaction|，以及定义密钥的包 \verb|internal/db|；再向上一层则为定义了客户端和服务端主要操作的包 \verb|internal/clientlib| 和 \verb|internal/serverlib|。最上层则为本文附带的可能的服务端样例实现。此外，本文亦提供了一些集成测试样例，可以通过 Golang 工具链的测试功能进行运行。对测试的具体描述和结果将放置在下一章描述。
+实现分为多个层级，最底层为程序设计语言工具链 Golang、数据库 SQLite3 以及全同态加密库 Lattigo；往上一层为共用的内部包（Internal Package），包括定义用户的包 \verb|internal/user|、定义共用数据库操作的包 \verb|internal/db|、定义单笔交易基本信息的包 \verb|internal/transaction|，以及定义密钥的包 \verb|internal/db|；再向上一层则为定义了客户端和服务端主要操作的包 \verb|internal/clientlib,serverlib|。最上层则为本文附带的可能的服务端样例实现。此外，本文亦提供了一些集成测试样例，可以通过 Golang 工具链的测试功能进行运行。对测试的具体描述和结果将放置在下一章描述。
 
 本实现使用了以下第三方包：
 
@@ -83,7 +83,8 @@ type Transaction struct {
 \end{minted}
 
 \begin{itemize}
-    \item \verb|ConfirmingPhase|：交易的确认阶段，取值为 \verb|{"unconfirmed", "confirmed", "failed"}|，分别表示未确认、已确认和无效；
+    \item \verb|ConfirmingPhase|：交易的确认阶段，取值为 \verb|{"unconfirmed", "confirmed"|\\
+    \verb|, "failed"}|，分别表示未确认、已确认和无效；
     \item \verb|Sender, Receipt|：作为外码标识交易的转出和转入方，其底层类型为 \verb|[16]byte|；
     \item \verb|CTSender, CTReceipt|：经过 \verb|rlwe.CipherText.MarshalBinary()| 方法反序列化的密文；
     \item \verb|SigCTSender, SigCTReceipt|：对密文的签名，由标准库 \verb|crypto/ecdsa| 中 \verb|ecdsa.SignASN1()| 产生；
@@ -94,8 +95,8 @@ type Transaction struct {
 \begin{itemize}
     \item \verb|func (t Transaction) GetSenderCT() (ct *rlwe.Ciphertext, err error)|：输出序列化后的转出方密文；
     \item \verb|func (t Transaction) GetReceiptCT() (ct *rlwe.Ciphertext, err error)|：输出序列化后的转入方密文；
-    \item \verb|func CalcFixedFee(ct *rlwe.Ciphertext, rate float64) (fee *rlwe.Ciphertext)|：计算固定费率的手续费；
-    \item \verb|func CalcRatedFee(ct *rlwe.Ciphertext, rate float64) (fee *rlwe.Ciphertext)|：计算按比例费率的手续费；
+    \item \verb|func CalcFixedFee(ct *rlwe.Ciphertext, rate float64) *rlwe.Ciphertext|：计算固定费率的手续费；
+    \item \verb|func CalcRatedFee(ct *rlwe.Ciphertext, rate float64) *rlwe.Ciphertext|：计算按比例费率的手续费；
 \end{itemize}
 
 \subsection{其他杂项：密钥链、用户和其他}
@@ -105,7 +106,8 @@ type Transaction struct {
 子包 \verb|internal/key| 定义了密钥链的相关结构体和函数，包括以下部分：
 
 \begin{itemize}
-    \item \verb|type CKKSKeyChain struct|：CKKS 方案所使用的密钥链结构体，包含了公私钥对象的指针\verb|CKKSPrivateKey *rlwe.SecretKey| \verb|CKKSPublicKey  *rlwe.PublicKey|，以及一个唯一标识符 \verb|Identifier uuid.UUID|
+    \item \verb|type CKKSKeyChain struct|：CKKS 方案所使用的密钥链结构体，包含了公钥对象的指针 \verb|CKKSPrivateKey *rlwe.SecretKey|，私钥钥对象的指针\\
+    \verb|CKKSPublicKey *rlwe.PublicKey|，以及一个唯一标识符 \verb|Identifier uuid.UUID|
     \item \verb|type ECDSAKeyChain struct|：类似 CKKSKeyChain 的定义，此处不再赘述。
     \item \verb|type CKKSPayload interface|：包含了 \verb|MarshalBinary() ([]byte, error)| 和 \verb|UnmarshalBinary([]byte) error| 两个序列化和反序列化函数的接口，对应 lattigo 中的密文对象、公私钥对象和重加密密钥对象。
 \end{itemize}
@@ -129,7 +131,8 @@ type User struct {
 
 \begin{itemize}
     \item \verb|func NewCiphertext() *rlwe.Ciphertext|：创建新的空密文对象；
-    \item \verb|func GenerateSwitchingKey(skIn, skOut *rlwe.SecretKey) *rlwe.SwitchingKey|：将 lattigo 中的 \verb|ckks.KeyGenerator.GenSwitchingKey()| 进行封装的函数；
+    \item \verb|func GenerateSwitchingKey(skIn, skOut *rlwe.SecretKey)|\\
+    \verb|*rlwe.SwitchingKey|：将 lattigo 中的\verb|(...).GenSwitchingKey()| 进行封装的函数；
     \item \verb|func CKKSMsgRound(v float64) float64|：将由 CKKS 方案解密的浮点数，进行保留两位小数的四舍五入。
 \end{itemize}
 
@@ -171,7 +174,7 @@ type User struct {
     \item \verb|func GetTransactionFromServer|：获取单笔交易的信息，其中交易金额为密文。
 \end{itemize}
 
-此外，在 \verb|server.go| 中还定义了变量 \verb|var ConfigServerURL string = DefaultServerURL|，用于指定服务端的地址。
+此外，在 \verb|server.go| 中还定义了变量 \verb|var ConfigServerURL string| 及其默认值，用于指定服务端的地址。
 
 \section{服务端}
 
@@ -206,8 +209,11 @@ func main(){
     defer Database.Close()
 
     // 开始监听
-    InfoLogger.Printf("Listening: %v", ConfigListenAddr+":"+ConfigListenPort)
-    if err := http.ListenAndServe(ConfigListenAddr+":"+ConfigListenPort, nil); err != nil {
+    InfoLogger.Printf("Listening: %v", 
+        ConfigListenAddr+":"+ConfigListenPort)
+    if err := http.ListenAndServe(
+        ConfigListenAddr+":"+ConfigListenPort,
+        nil); err != nil {
         log.Fatal(err)
     }
 }
@@ -220,8 +226,10 @@ func main(){
 \begin{itemize}
     \item \verb|func ReEncryptCTWithSwk(ct, swk)|：调用 \verb|evaluator.SwitchKeysNew| 方法，对密文进行重加密。同时也包含处理重加密失败时将 panic 转换为错误 error 的逻辑。
     \item \verb|func KeySwitchSenderToReceipt| 与 \verb|func KeySwitchReceiptToSender|：这两个方法从更高的层级，调用上述 \verb|ReEncryptCTWithSwk()|。
-    \item \verb|func ValidateSignatureForCipherText(ct interface{}, sig []byte, pk *ecdsa.PublicKey)|：对密文的签名进行验证，包含处理不同种类密文，即密文对象和/或密文反序列化后的字节流的逻辑。
+    \item \verb|func ValidateSignatureForCipherText(ct interface{}, sig []byte,|\\ 
+    \verb|pk *ecdsa.PublicKey)|：对密文的签名进行验证，包含处理不同种类密文，即密文对象和/或密文反序列化后的字节流的逻辑。
     \item \verb|func GetUpdatedBalance|：对交易后的账户进行处理的逻辑，包括对密文余额的更新。
-    \item \verb|func InitializeNewReceiptPKTransaction|、\verb|func InitializeNewSenderPKTransaction| 和 \verb|func FinishTransaction|：处理交易信息的支援性函数
+    \item \verb|func InitializeNewReceiptPKTransaction|、\\
+    \verb|func InitializeNewSenderPKTransaction| 和 \verb|func FinishTransaction|：处理交易信息的支援性函数
     \item \verb|type User struct|：该类型继承了 \verb|users.User|，并多一个 Balance 对象。
 \end{itemize}
