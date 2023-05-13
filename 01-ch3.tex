@@ -40,7 +40,7 @@
 
 \subsection{初始化阶段}
 
-系统输入安全参数 $\lambda$，输出系统的公共安全参数。在本方案中，选择 secp224r1 作为椭圆曲线数字签名算法所使用的曲1线，选择 PN12QP109 \footnote{即 $\log N = 12$ 且 $\log QP = 109$，允许对高达 $2^{11}$ 个元素的复向量进行加密} 作为 CKKS 方案所使用的安全参数。Alice 和 Bob 分别使用上述的公共安全参数，生成公私钥链\eqref{eq:Pub_and_Priv}并提交给监管方。
+系统输入安全参数 $\lambda$，输出系统的公共安全参数。在本方案中，选择 secp224r1 作为椭圆曲线数字签名算法所使用的曲线，选择 PN12QP109 \footnote{即 $\log N = 12$ 且 $\log QP = 109$，允许对高达 $2^{11}$ 个元素的复向量进行加密} 作为 CKKS 方案所使用的安全参数。Alice 和 Bob 分别使用上述的公共安全参数，生成公私钥链\eqref{eq:Pub_and_Priv}并提交给监管方。
 
 \begin{equation} \label{eq:Pub_and_Priv}
 \begin{aligned}
