@@ -40,7 +40,9 @@ require (
     \item \verb|func TestAcceptTransactionByTransaction(*testing.T)|：测试能否正确生成确认消息；
     \item \verb|func TestRegisterUser(*testing.T)|：测试生成密钥对，将用户信息提交给服务端的功能，并且测试服务端是否能够正确地将用户信息存储到数据库中而不报出异常；
     \item \verb|func TestRegisterSwk(*testing.T)|：在上述函数基础上，测试生成交换密钥，并将其提交给服务端；
-    \item \verb|func TestCreateTransferJob(*testing.T)|：在上述函数基础上，测试能否正确向服务端提交交易信息，以及服务端是否会正确响应请求；
+    \item \verb|func TestCreateTransferJobBySenderPK(*testing.T)|：在上述函数基础上，测试能否正确向服务端提交交易信息，以及服务端是否会正确响应请求；
+    \item \verb|func TestCreateTransferJobByReceiptPK(*testing.T)|：同上，但是测试的是以收款方公钥加密的密文发起的交易，涉及了双方签名和确认的过程，总共两次网络交互；
+    \item \verb|func BenchmarkReEncryptCTWithSwk(*testing.B)|：对重加密性能进行评估的基准测试函数
 \end{itemize}
 
 以及以下的辅助函数：
@@ -66,24 +68,54 @@ $ /usr/bin/go test -timeout 30s \
 $ /usr/bin/go test -benchmem -run=^$ \
   -coverprofile=/tmp/vscode-goUzLyPD/go-code-cover \
   -bench . github.com/CamberLoid/Chimata/internal/clientlib
+
+$ /usr/bin/go test -benchmem -run=^$ \
+  -coverprofile=/tmp/vscode-goUzLyPD/go-code-cover \
+  -bench . github.com/CamberLoid/Chimata/internal/serverlib
 \end{minted}
 
-测试结果如下图\ref*{Fig:test} \ref*{Fig:benchmark} \ref*{Fig:server}所示。
+以 VSCode 的 Golang 插件，执行的测试结果如下图\ref{Fig:test} \ref{Fig:benchmark}所示。
 
 \begin{figure}[ht]
     \centering
-    \includegraphics[width=0.8\linewidth]{./Figures/Test.png}
-    \caption{集成测试输出}\label{Fig:test}
+    \includegraphics[width=0.9\linewidth]{./Figures/Test.png}
+    \caption{以默认参数执行的集成测试输出}\label{Fig:test}
 \end{figure}
 
 \begin{figure}[ht]
     \centering
-    \includegraphics[width=0.8\linewidth]{./Figures/Benchmark.png}
-    \caption{性能测试输出}\label{Fig:benchmark}
+    \includegraphics[width=0.9\linewidth]{./Figures/Bench_Overall.png}
+    \caption{以默认参数执行的性能测试输出}\label{Fig:benchmark}
+\end{figure}
+
+\begin{figure}
+    \centering
+    \includegraphics[width=0.8\linewidth]{./Figures/Bench_ReEncrypt.png}
+    \caption{密文重加密的基准测试数据}\label{Fig:bench_reencrypt}
+\end{figure}
+
+在网络交互部分，笔者对 \verb|TestTransferBySenderPK| 和 \verb|TestTransferByReceiptPK| 进行了基准测试，测试内容为连续运行 100 次各方法，每次均和服务器交互，生成一笔交易并进行确认。测试结果如图\ref{Fig:bench_transaction}所示。可以注意到，服务端处理一次以转出方公钥加密密文的交易，平均耗时约 115 毫秒；而处理一次以转入方公钥加密的密文发起的交易，涉及到创建和确认两步，平均耗时约 140 毫秒。测试后的数据库大小约为 57 MB，如图\ref{Fig:database_size}所示，平均每笔交易占用约 290 KB 的存储空间\footnote{未考虑用户信息的存储消耗}，即每 1 GB 存储空间可以容纳约 3627 笔交易。图\ref{Fig:server}显示了服务端处理方法 \verb|/transaction/create/byReceiptPK| 的输出。
+
+\begin{figure}[ht]
+    \centering
+    \includegraphics[width=0.9\linewidth]{./Figures/Bench_Transaction_all.png}
+    \caption{交易基准测试数据}\label{Fig:bench_transaction}
 \end{figure}
 
 \begin{figure}[ht]
     \centering
-    \includegraphics[width=0.8\linewidth]{./Figures/Server.png}
+    \includegraphics[width=0.9\linewidth]{./Figures/Test_Database_Size.png}
+    \caption{数据库大小}\label{Fig:database_size}
+\end{figure}
+
+\begin{figure}[ht]
+    \centering
+    \includegraphics[width=0.9\linewidth]{./Figures/Server_ReceiptPK.png}
     \caption{服务端日志输出}\label{Fig:server}
 \end{figure}
+
+在涉及网络交互的部分之外，本文也对加解密性能和重加密性能进行测试。测试结果如图\ref{Fig:benchmark}和图\ref{Fig:bench_reencrypt}所示，平均每次加解密时间总和约为 12 ms，而重加密的时间开销约为 3 ms。可以看到，加解密性能和重加密性能都较为优秀。与网络交互部分的实验数据进行对比可以发现，实际密码学函数的开销，即加解密和重加密的时间的总和，约占据了单次网络交互时间的约 15\% 的比例。可以推测，在网络交互部分，服务端的数据库操作开销占比较大。
+
+\section{本章小结}
+
+为测试提出方案的性能，本章对基于同态加密的用户交易金额隐私保护交易方案中的密码学部分以及交易处理部分，借助 Golang 工具链进行了基准测试。实验结果表明，在预设的安全参数下，本文所提出的交易方案，在密码学部分具有较高的效率；从总体来看，本方案的单次交易性能也符合预期，在实际应用中具有高效性。
