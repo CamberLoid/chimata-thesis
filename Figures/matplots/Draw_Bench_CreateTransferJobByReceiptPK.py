@@ -29,7 +29,7 @@ ax2 = ax1.twinx()
 
 # 绘制右侧轴（single_in_ms）
 ax2.plot(seq, single_in_ms, 'r-', marker='x')
-ax2.set_ylabel('平均每次操作消耗时间 (KB)', color='r', fontproperties=prop)
+ax2.set_ylabel('平均每次操作消耗时间 (ms)', color='r', fontproperties=prop)
 ax2.tick_params('y', colors='r')
 
 ax2_ylim = ax2.get_ylim()
