@@ -7,7 +7,7 @@
 \begin{figure}[ht]
     \centering
     \includegraphics[width=0.8\linewidth]{Figures/abstract_on_chimata.png}
-    \caption{示意图：代码层面设计}\label{Fig:Design}
+    \caption{代码架构示意图}\label{Fig:Design}
 \end{figure}
 
 实现分为多个层级，最底层为程序设计语言工具链 Golang、数据库 SQLite3 以及全同态加密库 Lattigo；往上一层为共用的内部包（Internal Package），包括定义用户的包 \verb|internal/user|、定义共用数据库操作的包 \verb|internal/db|、定义单笔交易基本信息的包 \verb|internal/transaction|，以及定义密钥的包 \verb|internal/db|；再向上一层则为定义了客户端和服务端主要操作的包 \verb|internal/clientlib,serverlib|。最上层则为本文附带的可能的服务端样例实现。此外，本文亦提供了一些集成测试样例，可以通过 Golang 工具链的测试功能进行运行。对测试的具体描述和结果将放置在下一章描述。
@@ -20,7 +20,7 @@
     \item \verb|github.com/mattn/go-sqlite3|：访问 SQLite 数据库文件；
 \end{itemize}
 
-\section{方案支持层}
+\section{基础组件}
 
 \subsection{数据库}
 
@@ -40,24 +40,24 @@
 
 \begin{figure}[ht]
     \centering
-    \includegraphics[width=0.8\linewidth]{Figures/chimata-database-design.png}
+    \includegraphics[width=\linewidth]{Figures/chimata-database-design.png}
     \caption{数据库设计示意图}\label{Fig:Database}
 \end{figure}
 
 在 Golang 中使用下面的语句导入 SQLite3 相关库：
 
-\begin{minted}{go}
+\begin{minted}[frame=single]{go}
 import (
     "database/sql" // 标准库
-
-    database "github.com/CamberLoid/Chimata/internal/db" // 方案内部库
-    _ "github.com/mattn/go-sqlite3" // 外部第三方库，操作 SQLite3 数据库引擎
+    
+    database "github.com/CamberLoid/Chimata/internal/db" // 内部库
+    _ "github.com/mattn/go-sqlite3" // 外部库，操作 SQLite3 数据库
 )
 \end{minted}
 
 由于本文使用的数据库涉及到对外码的使用，使用了外码约束来保证数据库的一致性，因此在初始化数据库时需要额外添加指令：
 
-\begin{minted}{go}
+\begin{minted}[frame=single]{go}
     db.Exec("PRAGMA foreign_keys = ON;")
 \end{minted}
  
@@ -65,7 +65,7 @@ import (
 
 结构体 \verb|Transaction| 包含在子包 \verb|internal/transaction| 内，被上层包所使用。其定义如下文所示
 
-\begin{minted}{go}
+\begin{minted}[frame=single]{go}
 type Transaction struct {
     ConfirmingPhase   string    `json:"confirmingPhase"`
     UUID              uuid.UUID `json:"uuid"`
@@ -116,7 +116,7 @@ type Transaction struct {
 
 子包 \verb|internal/user| 定义了基本的用户类型。代码声明如下：
 
-\begin{minted}{go}
+\begin{minted}[frame=single]{go}
 type User struct {
     UserIdentifier    uuid.UUID // 或者是 [16]bytes
     UserName          string
@@ -195,7 +195,7 @@ type User struct {
 
 主函数如下：
 
-\begin{minted}{go}
+\begin{minted}[frame=single]{go}
 func main(){
     loggerInit()
     http.HandleFunc("/transaction/create/bySenderPK", 

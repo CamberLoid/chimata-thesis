@@ -18,11 +18,10 @@
 
 以下为本方案所使用的第三方库列表。其中，\verb|github.com/tuneinsight/lattigo/v4| 为本方案的核心库，其余为辅助库。
 
-\begin{minted}{go}
+\begin{minted}[frame=single]{go}
 require (
     github.com/tuneinsight/lattigo/v4 v4.1.0
     github.com/urfave/cli/v2 v2.25.1
-
     github.com/google/uuid v1.3.0
     github.com/kr/pretty v0.3.1
     github.com/mattn/go-sqlite3 v1.14.16
@@ -61,7 +60,7 @@ require (
 
 本文在测试时，使用下述命令，调用 Golang 工具链提供测试功能，对方案进行功能测试和性能测试。
 
-\begin{minted}{shell}
+\begin{minted}[frame=single]{shell}
 $ go run ./cmd/server # 使服务端上线
 
 # 进行集成测试
@@ -125,7 +124,7 @@ $ /usr/bin/go test \
 
 在同态运算方面，本文所提出的方案涉及到的同态运算主要为密态余额的更新，即在交易完成后进行的对发送方和接收方的余额的更新，涉及到密文之间的同态加法和密文与明文常数的同态乘法。因此，笔者也对这部分被封装的同态运算函数进行了性能基准测试。测试方法为执行以下命令：
 
-\begin{minted}{shell}
+\begin{minted}[frame=single]{shell}
     $ /usr/bin/go test -benchmem -run=^$ \
     -bench ^BenchmarkGetUpdated\* \
     github.com/CamberLoid/Chimata/internal/serverlib
@@ -149,13 +148,13 @@ $ /usr/bin/go test \
     \caption{测试数据：同态密文更新的时间开销} \label{Tab:CTUpdate}
 \end{table}
 
-笔者亦对服务端相关数据库操作的时间开销进行。测试方法为服务端方面对每个数据库操作函数的时间开销进行测量，并记录总共操作的交易，在程序接收 SIGINT 信号退出时于日志中输出总时间开销除以总处理交易。计算过程如\eqref{eq:database_measure}所示。在执行前文交易基准测试后，使用 \texttt{Ctrl-C} 终止服务端，服务端输出如图\ref{Fig:bench_database_perf}所示。
+笔者亦对服务端相关数据库操作的时间开销进行了测量。测试方法为服务端方面对每个数据库操作函数的时间开销进行测量，并记录总共操作的交易数，在程序接收 SIGINT 信号退出时于日志中输出总时间开销除以总处理交易的结果 。计算过程如\eqref{eq:database_measure}所示。在执行前文交易基准测试后，使用 \texttt{Ctrl-C} 终止服务端，服务端输出如图\ref{Fig:bench_database_perf}所示。
 
 \begin{equation} \label{eq:database_measure}
     \textrm{平均数据库操作时间} = \frac{\textrm{数据库操作总时间}}{\textrm{处理的交易笔数}}
 \end{equation}
 
-\begin{minted}{go}
+\begin{minted}[frame=single]{go}
     var _start time.Timer
     // 无关内容
     _start = time.Now()
