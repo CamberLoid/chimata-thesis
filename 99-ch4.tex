@@ -1,14 +1,10 @@
 \chapter{交易方案的详细设计和代码实现}
 
-\section{引言}
 
-本章主要对本文提出的交易金额隐私保护的交易方案的样例实现进行描述，方案的实现设计抽象如下图\ref*{Fig:Design}所示。
 
-\begin{figure}[ht]
-    \centering
-    \includegraphics[width=0.8\linewidth]{Figures/abstract_on_chimata.png}
-    \caption{代码架构示意图}\label{Fig:Design}
-\end{figure}
+方案的实现设计抽象如下图\ref*{Fig:Design}所示。
+
+
 
 实现分为多个层级，最底层为程序设计语言工具链 Golang、数据库 SQLite3 以及全同态加密库 Lattigo；往上一层为共用的内部包（Internal Package），包括定义用户的包 \verb|internal/user|、定义共用数据库操作的包 \verb|internal/db|、定义单笔交易基本信息的包 \verb|internal/transaction|，以及定义密钥的包 \verb|internal/db|；再向上一层则为定义了客户端和服务端主要操作的包 \verb|internal/clientlib,serverlib|。最上层则为本文附带的可能的服务端样例实现。此外，本文亦提供了一些集成测试样例，可以通过 Golang 工具链的测试功能进行运行。对测试的具体描述和结果将放置在下一章描述。
 
