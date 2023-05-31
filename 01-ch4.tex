@@ -1,4 +1,4 @@
-\chapter{交易方案的代码实现与实验}
+\chapter{交易方案的实验评估}
 
 本章对本文提出的交易金额隐私保护方案的样例实现进行简要的描述，并对该实现进行测试实验，收集结果并进行分析。
 
@@ -11,6 +11,22 @@
 \end{figure}
 
 本文的实现分为多个层级，最底层为程序设计语言工具链 Golang、数据库 SQLite3 以及全同态加密库 Lattigo；其次为本文定义的基础组件层，包括对用户、交易信息和数据库操作进行定义的内部包（Internal Package）；再向上一层则为定义了客户端和服务端主要操作的包 \verb|internal/clientlib,serverlib|。最上层则为本文附带的可能的服务端样例实现 \verb|cmd/server|。
+
+\subsection{实现工具}
+
+\subsubsection*{Lattigo}
+
+Lattigo 是一个 Golang 的格密码学库，实现了多个基于 R-LWE 问题的全同态加密方案，以及数个安全多方计算协议\cite{Mouchet2020LattigoAM,lattigoRepo}。Lattigo 实现了本文所使用的 CKKS 方案的基本算法和扩展函数，本文所提出的方案的实现即基于该库编写而成。
+
+本文用到了多个 Lattigo 中提供的拓展函数，包括密文与明文之间不需要评估密钥的加法和乘法等。相关说明已在前文\ref{sec:CKKS_Review}所述。
+
+\subsubsection*{SQLite3}
+
+SQLite3 是一个轻量级的开源的关系数据库，其源代码被释放在公有领域\cite{sqlite3}。SQLite 最大的特点没有单独的服务器进程，只作为一个程式库在单个数据库文件中进行操作。这一特性使得 SQLite 不需要进行额外配置，直接嵌入到应用程序中运行。
+
+SQLite3 所使用的数据库文件格式也是开放且稳定的。许多流行的语言，如 Python、Rust，以及本文所使用的 Golang，都有 SQLite3 的第三方库，在静态编译的情况下，程序本身并不需要系统安装 SQLite3 运行时库。
+
+本文实现利用了 SQLite3 单文件数据库的特点，对方案的空间开销进行了测量，相关测量方法见下文\ref{Sec:Mem_cost}所示。
 
 \subsection{基础组件}
 
@@ -71,34 +87,34 @@ import (
 \begin{itemize}
     \item 对于 CKKS 相关的密码学函数，本文方案在客户端方面对 Lattigo 的加密和解密函数进行了封装。在服务端方面对重重加密函数，以及用于密态余额更新的同态运算函数进行了封装。封装后的函数如下所示。
     \begin{minted}[frame=single]{go}
-    // 加解密
-    func CKKSEncryptAmount(float64, *rlwe.PublicKey) \
-        *rlwe.Ciphertext;
-    func CKKSDecryptAmountFromCT(*rlwe.Ciphertext, 
-        *rlwe.SecretKey) float64;
-    // 重加密
-    func ReEncryptCTWithSwk(*rlwe.Ciphertext, 
-        *rlwe.SwitchingKey) *rlwe.Ciphertext;
-    // 密文处理
-    func GetUpdatedBalance(*transaction.Transaction, 
-        *rlwe.Ciphertext, *rlwe.Ciphertext) \
-        (*rlwe.Ciphertext, *rlwe.Ciphertext, error)
+// 加解密
+func CKKSEncryptAmount(float64, *rlwe.PublicKey) \
+    *rlwe.Ciphertext;
+func CKKSDecryptAmountFromCT(*rlwe.Ciphertext, 
+    *rlwe.SecretKey) float64;
+// 重加密
+func ReEncryptCTWithSwk(*rlwe.Ciphertext, 
+    *rlwe.SwitchingKey) *rlwe.Ciphertext;
+// 密文处理
+func GetUpdatedBalance(*transaction.Transaction, 
+    *rlwe.Ciphertext, *rlwe.Ciphertext) \
+    (*rlwe.Ciphertext, *rlwe.Ciphertext, error)
     \end{minted}
     \item 在客户端与服务端的交互方面，本文方案以用户结构体作为接收器，实现了数个交易发起和接受的函数，如下所示：
     \begin{minted}[frame=single]{go}
-    // 信息注册
-    func (*User) RegisterUser() error
-    func RegisterSwk(userIn, userOut uuid.UUID, \
-        swk *rlwe.SwitchingKey) error
-    // 交易处理
-    func (*User) CreateTransferJob(*transaction.Transaction) \
-        (*transaction.Transaction, error)
-    func (*User) CreateConfirmTransactionTask \
-        (*transaction.Transaction) error
-    // 交易查询
-    func GetTransactionFromServer(uuid.UUID) \
-        (*transaction.Transaction, error)
-    func (User) GetBalance() (float64, error);
+// 信息注册
+func (*User) RegisterUser() error
+func RegisterSwk(userIn, userOut uuid.UUID, \
+    swk *rlwe.SwitchingKey) error
+// 交易处理
+func (*User) CreateTransferJob(*transaction.Transaction) \
+    (*transaction.Transaction, error)
+func (*User) CreateConfirmTransactionTask \
+    (*transaction.Transaction) error
+// 交易查询
+func GetTransactionFromServer(uuid.UUID) \
+    (*transaction.Transaction, error)
+func (User) GetBalance() (float64, error);
     \end{minted}
 \end{itemize}
 
@@ -110,7 +126,7 @@ import (
     \item \verb|/register/user|：注册用户基本信息的接口。
     \item \verb|/register/swk|：向服务器提交重加密密钥的接口。
     \item \verb|/transaction/create/bySenderPK| 和 \verb|/transaction/create/byReceiptPK|：创建转账请求的接口。
-    \item \verb|/transaction/confirm|：接收转账的接口，与上一条类似。
+    \item \verb|/transaction/confirm|：接受转账的接口，与上一条类似。
     \item \verb|/transaction/get|：获取交易信息的接口。该接口不需要鉴权；
     \item \verb|/user/GetBalance|：获取密文余额的接口。
 \end{itemize}
@@ -118,25 +134,25 @@ import (
 服务端主函数则调用标准库 \texttt{net/http} 对前文所述接口进行加载并进行端口监听，此外也负责打开数据库等。
 
 \begin{minted}[frame=single]{go}
-    func main(){
-        loggerInit()
-        http.HandleFunc("/transaction/create/bySenderPK", 
-            HandlerTransactionCreateBySenderPK)
-        // ...  | 其他接口声明
-        // 打开数据库
-        if Database, err = InitDatabase(); err != nil {
-            CriticalLogger.Fatal(err.Error())
-        }
-        defer Database.Close()
-        // 开始监听
-        InfoLogger.Printf("Listening: %v", 
-            ConfigListenAddr+":"+ConfigListenPort)
-        if err := http.ListenAndServe(
-            ConfigListenAddr+":"+ConfigListenPort,
-            nil); err != nil {
-            log.Fatal(err)
-        }
+func main(){
+    loggerInit()
+    http.HandleFunc("/transaction/create/bySenderPK", 
+        HandlerTransactionCreateBySenderPK)
+    // ...  | 其他接口声明
+    // 打开数据库
+    if Database, err = InitDatabase(); err != nil {
+        CriticalLogger.Fatal(err.Error())
     }
+    defer Database.Close()
+    // 开始监听
+    InfoLogger.Printf("Listening: %v", 
+        ConfigListenAddr+":"+ConfigListenPort)
+    if err := http.ListenAndServe(
+        ConfigListenAddr+":"+ConfigListenPort,
+        nil); err != nil {
+        log.Fatal(err)
+    }
+}
 \end{minted}
 
 服务端对交易的处理如上一章所述，不再赘述。
@@ -201,8 +217,6 @@ require (
 \subsubsection{简单测试}
 
 本文在测试时，使用下述命令，调用 Golang 工具链提供测试功能，对方案进行功能测试和性能测试。
-
-\pagebreak
 
 \begin{minted}[frame=single]{shell}
 $ go run ./cmd/server # 使服务端上线
@@ -331,7 +345,7 @@ $ /usr/bin/go test \
 
 此外也可以从测试结果观察到，测试总时间开销相对服务端平均每笔交易的处理时间开销的总和要高，在连续处理交易笔数较少的时候尤为明显。笔者推测该额外开销是由 Golang 工具链自带的测试模组本身开销导致，具体而言包括了测试模块初始化开销，以及测试模块对单个测试的管理的开销等。这些开销是不可避免的，并被 Golang 工具计算在了总时间开销内。
 
-\subsubsection{交易的空间开销测试}
+\subsubsection{交易的空间开销测试} \label{Sec:Mem_cost}
 
 本小节对服务端在处理交易信息后，其存储的密文的数据库大小，即服务端的空间开销进行评估。测试方法为，通过基准测试函数 \verb|CreateTransferJobByReceiptPK| 和对应的使用发送方公钥加密版本，令服务端连续处理至多 1000 笔不同的交易后，对其数据库大小进进行测算。每次进行新的测试循环前，都会对数据库文件进行删除并重新启动客户端，让服务端生成新的数据库文件。对实验结果进行收集后，使用 Python 模组 matplotlib 绘制折线图。结果如图\ref{Fig:graph_database_size}所示。
 

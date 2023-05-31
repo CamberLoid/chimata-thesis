@@ -50,6 +50,14 @@ CKKS 方案包含以下的核心函数和算法：
     \item $SwitchKey_{swk}(ct_{pk_1}) \rightarrow ct_{pk_2}$：该函数将密文 $ct_{pk_1}$ 转换为 $pk_2$ 对应的密文 $ct_{pk_2}$。
 \end{itemize}
 
+在一些库实现中，如 Lattigo，也用到了以下的扩展函数，后文亦会对其进行简要说明。
+
+
+\begin{itemize}
+    \item $MultByConst(ct, const) = ct'$：对密文 $ct$ 所对应的消息向量 $m = [m_1, m_2, \dots]$ 乘上一个明文常数 $const$，得到 $ct' = Enc(m')$，其中 $m' = const \cdot m  = [const \ m_1, const \cdot m_2, \dots]$。
+    \item $AddConst(ct, const) = ct'$：对密文 $ct$ 所对应的消息向量 $m = [m_1, m_2, \dots]$ 的每一个元素，与明文常数 $const$ 进行相加，得到 $ct' = Enc(m')$，其中 $m' = [const + m_1, const + m_2, \dots]$。
+\end{itemize}
+
 下图\cite{ckksIntroduct} \ref*{Fig:CKKS}描述了 CKKS 方案的工作生命周期：
 
 \begin{figure}[ht]
@@ -69,20 +77,20 @@ CKKS 方案包含以下的核心函数和算法：
     \begin{equation} \label{eq:elliptic} 
         E: y^2 = (x^3 + a \times x + b) mod p
     \end{equation}
-    \item 公私钥生成：选择随机整数 $dA$ 作为私钥，计算\eqref{eq:elliptic_pk}得到公钥 $Qa$，其中 $\times$ 是一个单向陷门函数，通过公钥反推私钥是困难的。
+    \item 公私钥生成：选择随机整数 $sk$ 作为私钥，计算\eqref{eq:elliptic_pk}得到公钥 $pk$，其中 $\times$ 是一个单向陷门函数，通过公钥反推私钥是困难的。
     \begin{equation} \label{eq:elliptic_pk}
-        Qa = dA \times G
+        pk = sk \times G
     \end{equation}
     \item 签名：对消息 $m$ 生成其摘要 $h = Hash(m)$，通过公式\eqref{eq:elliptic_sign_1}和\eqref{eq:elliptic_sign_2}计算签名 $Sig = (R, S)$，其中 $k$ 为一随机数。
     \begin{equation} \label{eq:elliptic_sign_1}
-        P(x_1, y_1) = kG, R = x_1 mod N
+        P(x_1, y_1) = k \times G, R = x_1 mod N
     \end{equation}
     \begin{equation} \label{eq:elliptic_sign_2}
-        S = k^{-1} (h + dA \times R) mod p
+        S = k^{-1} (h + sk \times R) mod p
     \end{equation}
     \item 验证：挑战者接收到消息 $m$ 和签名 $(R, S)$，在生成摘要后通过式子\eqref{eq:elliptic_verify_1}计算验证签名，若式子\eqref{eq:elliptic_verify_2}成立，则签名被接受
     \begin{equation} \label{eq:elliptic_verify_1}
-        P(x_1, y_1) = S^{-1} \times h \times G + S \times R \times Qa (mod N)
+        P(x_1, y_1) = S^{-1} \times h \times G + S \times R \times pk (mod N)
     \end{equation}
     \begin{equation} \label{eq:elliptic_verify_2}
         x_1 = R (mod N)
@@ -97,45 +105,6 @@ CKKS 方案包含以下的核心函数和算法：
     \item $Verify(m, pk, sig) \rightarrow bool$：使用公钥 $pk$ 对签名 $sig$ 进行验证，输出验证结果 $bool$。
 \end{itemize}
 
-% 改为 “其他” ，并且简略带过
-\section{其他}
-
-本节将简要阐述其他本文方案使用到的工具。
-
-\subsection{基于格密码学的同态加密库 Lattigo}
-
-Lattigo 是一个 Golang 密码学库，实现了多个基于 R-LWE 问题的全同态加密方案，以及数个安全多方计算协议\cite{Mouchet2020LattigoAM,lattigoRepo}。需要指出的是，Lattigo 实现了本文所使用的 CKKS 方案的基本算法和扩展函数，本文所提出的方案的实现即基于该库编写而成。
-
-% 该密码学库具有以下的特点：
-
-% \begin{itemize}
-    % \item 支持数个全同态加密方案，包括 BFV、BGV 和 CKKS 以及它们对应的多方计算版本，其中 CKKS 也包括了它的一个变种\cite{cryptoeprint:2018/952}。此外该库也支持 CKKS 的自举操作，使得该方案可以进行全同态加密。
-    % \item 使用 Golang 编写。该语言及其工具链本身的特点使得其十分适合进行网络编程和异步编程，同时也拥有着与 C/C++ 库相当的性能，甚至在某些情况下更优。此外，Go 工具链也有着较为完备的集成测试框架。
-    % \item 良好的跨平台特性。该密码学库支持所有 Golang 本身支持的平台，也包括了浏览器所使用的，和具体平台无关的 Web Assembly 代码。
-% \end{itemize}
-
-% 对后文的密钥交换是必要的
-尤其是，对于 CKKS 方案，Lattigo 提供了以下的扩展函数，这些函数允许在没有评估密钥的情况下对密文进行同态操作，使得对密文的操作更为灵活：
-
-\begin{itemize}
-    \item $MultByConst(ct, const) = ct'$：对密文 $ct$ 所对应的消息向量 $m = [m_1, m_2, \dots]$ 乘上一个明文常数 $const$，得到 $ct' = Enc(m')$，其中 $m' = const \cdot m  = [const \ m_1, const \cdot m_2, \dots]$。
-    \item $AddConst(ct, const) = ct'$：对密文 $ct$ 所对应的消息向量 $m = [m_1, m_2, \dots]$ 的每一个元素，与明文常数 $const$ 进行相加，得到 $ct' = Enc(m')$，其中 $m' = [const + m_1, const + m_2, \dots]$。
-\end{itemize}
-
-\subsection{数据库 SQLite3}
-
-SQLite3 是一个轻量级的开源的关系数据库，其源代码被释放在公有领域\cite{sqlite3}。和其他数据库管理系统不同，SQLite 最大的特点没有单独的服务器进程，只作为一个程式库在单个数据库文件中进行操作。这一特性使得 SQLite 不需要进行额外配置，直接嵌入到应用程序中运行。SQLite3 所使用的数据库文件格式也是开放且稳定的。许多流行的语言，如 Python、Rust，以及本文所使用的 Golang，都有 SQLite3 的第三方库，在静态编译的情况下，程序本身并不需要系统安装 SQLite3 运行时库。
-
-%SQLite3 的主要特性如下：\cite{sqlite3_2}
-
-%\begin{itemize}
-    %\item 独立性：SQLite 是一个独立的系统，除了 C 标准库以外几乎没有其他任何依赖关系，因此几乎能够在所有的操作系统上运行
-    %\item 零配置：SQLite 不需要进行额外的配置，也不需要服务器进程，所有的数据都存储在一个单独的文件中。SQLite 可以作为动态或静态链接库嵌入应用程序，而且大多数语言都有对应的第三方库。
-    %\item 事务性：和其他数据库一样，SQLite 也支持事务，而且支持 ACID 属性。对SQLite嵌入式数据库来说，单个事务中的所有更改要么完全触发，要么根本不发生。
-%\end{itemize}
-
-
-
 \section{本章小结}
 
-本章首先介绍了同态加密和全同态加密，及其发展历程。然后，本章重点介绍了本文所使用的全同态加密方案 CKKS，包括其基于的困难问题，CKKS 方案的特点，以及该加密方案包含的主要函数等。本章也对椭圆曲线签名算法等涉及到的其他密码学工具，进行了简要的介绍。另外本章也简要介绍了后文中会用到的软件工具，包括全同态加密密码学库 Lattigo 和数据库引擎 SQLite 3，为后续的实现进行准备。本章内容是后文的基础，后续对交易方案的构建都在本章基础之上完成。
+本章首先介绍了同态加密和全同态加密，及其发展历程。然后，本章重点介绍了本文所使用的全同态加密方案 CKKS，包括其基于的困难问题，CKKS 方案的特点，以及该加密方案包含的主要函数等。本章也对椭圆曲线签名算法等涉及到的其他密码学工具，进行了简要的介绍。本章内容是后文的基础，后续对交易方案的构建都在本章基础之上完成。

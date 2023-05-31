@@ -3,7 +3,7 @@
 
 针对用户之间交易金额的隐私保护问题，本文基于 CKKS 同态加密算法，同时结合 ECDSA 数字签名算法，提出了一个具备金额隐私保护的加密交易方案，实现了用户交易金额信息不被支付服务提供方等不可信第三方知道。
 
-具体而言，为了确保交易的隐私性和保密性，本文使用 CKKS 同态加密方案对交易金额进行加密保护。同时利用 CKKS 方案的相关同态特性，允许了对用户的密文账户余额的同态操作以及手续费的计算，确保了可交易性；在上述基础上，本文借助 ECDSA 数字签名算法，确保了交易的不可伪造性。为了确保交易的正确性，本文借助了密钥转换手段，使用一个特定的重加密密钥，将交易信息中发送方公钥加密的密文金额转换为接收方的密文金额，或反之，以确保两个密文对应的明文一致。
+具体而言，为了确保交易的隐私性和保密性，本文使用 CKKS 同态加密方案对交易金额进行加密保护。同时利用 CKKS 方案的相关同态特性，允许了对用户的密文账户余额的同态操作以及手续费的计算。在上述基础上，本文借助 ECDSA 数字签名算法，确保了交易的不可伪造性。为了确保交易的正确性，本文借助了密钥转换手段，使用一个特定的重加密密钥，将交易信息中发送方公钥加密的密文金额与接收方的密文金额互相转换，以确保两个密文对应的明文一致。
 
 本文主要内容包括以下部分：首先对相关基础知识和关键技术进行了综述和研究，包括格密码学库 Lattigo、全同态加密方案 CKKS 和轻量级数据库引擎 SQLite3；其次对方案的需求和抽象构造进行了描述，并给出了代码层级的实现；最后对方案进行了测试，验证了方案的可行性。
 
@@ -15,8 +15,8 @@ As e-commerce rises in prominence in business development, mobile payment and it
 
 To protect the privacy of transaction amounts between users, this thesis proposes an encrypted transaction scheme with ciphertext amounts based on the CKKS homomorphic encryption algorithm and an ECDSA. This scheme ensures that user transaction amount information is not known to untrusted third parties such as payment service providers. 
 
-Specifically, to ensure the privacy and confidentiality of transactions, this thesis uses the CKKS scheme to encrypt and protect the transaction amounts. Using the homomorphic features of CKKS scheme, it enables the homomorphic operation of ciphertext account balances of users and the calculation of fees, ensuring the tradability. On this basis, this thesis uses the ECDSA to ensure the non-forgery of transactions. To ensure the correctness of transactions, this article uses a key switching method, with a specific re-encryption key, to convert the ciphertext amount encrypted by the sender's public key in the transaction information into the ciphertext amount of the receiver, or vice versa, to ensure that the plaintexts corresponding to the two ciphertexts are consistent.
+Specifically, to ensure the privacy and confidentiality of transactions, this thesis uses the CKKS scheme to encrypt and protect the transaction amounts. Its feature also enables the homomorphic operation of ciphertext account balances of users and the calculation of fees. On this basis, this thesis uses the ECDSA to ensure the non-forgery of transactions. To ensure the correctness of transactions, this article uses a key switching method, with a specific re-encryption key, to convert the ciphertext amount encrypted by the sender's public key in the transaction information into the ciphertext amount of the receiver, or vice versa, to ensure that the plaintexts corresponding to the two ciphertexts are consistent.
 
 This paper first reviews and studies relevant basic knowledge and key technologies, including lattice-based cryptography library Lattigo, the fully homomorphic encryption scheme CKKS Scheme, and the lightweight database engine SQLite3. Then it describes the requirements and abstract construction of the scheme and provides code-level implementation. Finally, the feasibility of the scheme is verified through testing.
 \end{enabstract}
-\enkeywords{Mobile Payment, Homomorphic Encryption, Privacy Preservation, CKKS(Cheon-Kim-Kim-Song) Scheme, ECDSA}
+\enkeywords{Mobile Payment, Homomorphic Encryption, Privacy Preservation, CKKS Scheme, ECDSA}
